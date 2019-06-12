@@ -1,7 +1,9 @@
-import create_board
 import pygame
+import sys
 import numpy as np
+import random
+import time
+import create_board
 
-board=create_board.create()
 
-
+create_board()
