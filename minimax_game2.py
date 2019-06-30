@@ -217,7 +217,8 @@ myfont = pygame.font.SysFont("monospace", 75)
 while(game=="True" or game=="true"):
     for event in pygame.event.get():
         if(event.type==pygame.QUIT):
-            sys.exit()
+            pygame.quit()
+            #sys.exit()
         if(event.type==pygame.MOUSEMOTION):
             poss=event.pos[0]
             pygame.draw.rect(screen,black,(0,0,width,size))
@@ -246,7 +247,8 @@ while(game=="True" or game=="true"):
                     print("player ", ((turn % 2) + 1), "WINS")
                     print(np.flip(board, 0))
                     time.sleep(2)
-                    sys.exit()
+                    #sys.exit()
+                    pygame.quit()
 
     if(plr==2):
         col,minimax_score=minimax(board,5,-math.inf,math.inf,True)
@@ -266,7 +268,8 @@ while(game=="True" or game=="true"):
                 print("player ", ((turn % 2) + 1), "WINS")
                 print(np.flip(board, 0))
                 time.sleep(2)
-                sys.exit()
+                #sys.exit()
+                pygame.quit()
 
 
 
