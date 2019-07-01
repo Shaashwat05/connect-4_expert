@@ -36,6 +36,7 @@ pygame.draw.rect(screen,blue,(0,size,width,(row_size*size)))
 for i in range(row_size):
     for j in  range(column_size):
         pygame.draw.circle(screen,black,(int((j*size)+size/2),int(size+size/2+(i*size))),int(size/2-5))
+pygame.display.set_caption("ai ")
 pygame.display.update()
 
 
@@ -216,6 +217,7 @@ myfont = pygame.font.SysFont("monospace", 75)
 
 while(game=="True" or game=="true"):
     for event in pygame.event.get():
+
         if(event.type==pygame.QUIT):
             pygame.quit()
             #sys.exit()
@@ -228,6 +230,7 @@ while(game=="True" or game=="true"):
 
         if (event.type == pygame.MOUSEBUTTONDOWN):
             # print("player ", ((turn % 2) + 1), "enter the column no")
+            print("hi")
             if(plr==1):
                 col = event.pos[0]
                 col = int(np.floor(col / size))
@@ -252,7 +255,6 @@ while(game=="True" or game=="true"):
 
     if(plr==2):
         col,minimax_score=minimax(board,5,-math.inf,math.inf,True)
-        print(col)
         #print(minimax_score)
         if(validity(col)):
             row=get_next_open_window(col)

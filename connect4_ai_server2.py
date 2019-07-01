@@ -1,12 +1,16 @@
 import socket
-import pygame
 import sys
-import numpy as np
 import random
+import pygame
+import numpy as np
 import time
 import math
+import pickle
+
+
 
 pygame.init()
+
 
 
 #global variables
@@ -14,11 +18,8 @@ row_size=6
 column_size=7
 board=np.zeros((row_size,column_size))
 np.flip(board,0)
-game="True"
 turn=0
-plr=(turn%2)+1
 row_count=[0,0,0,0,0,0,0]
-win=0
 size=100
 height=int((row_size+1)*size)
 width=int(column_size*size)
@@ -26,12 +27,7 @@ blue=(0,0,255)
 black=(0,0,0)
 red=(255,0,0)
 yellow=(255,255,0)
-
 myfont = pygame.font.SysFont("monospace", 75)
-
-
-
-
 
 #creating the screen of the game
 screen_size=(width,height)
@@ -41,36 +37,6 @@ for i in range(row_size):
     for j in  range(column_size):
         pygame.draw.circle(screen,black,(int((j*size)+size/2),int(size+size/2+(i*size))),int(size/2-5))
 pygame.display.update()
-
-
-
-
-def create_socket():
-    try:
-        global host
-        global s
-        global port
-        host=""
-        port=9999
-        s=socket.socket()
-    except socket.error as mag:
-        print("socket creation error",str(mag))
-
-
-def bind_socket():
-    try:
-        global host
-        global s
-        global port
-
-        print("binding the socket")
-        s.bind((host,port))
-        s.listen(5)
-
-
-    except socket.error as mag:
-        print("socket binding error ",str(mag)," retrying")
-        bind_socket()
 
 
 
@@ -124,6 +90,44 @@ def win_cond(plr):
 
     return 0
 
+def create_socket():
+    try:
+        global host
+        global s
+        global port
+        host=""
+        port=9999
+        s=socket.socket()
+    except socket.error as mag:
+        print("socket creation error",str(mag))
+
+
+def bind_socket():
+    try:
+        global host
+        global s
+        global port
+
+        print("binding the socket")
+        s.bind((host,port))
+        s.listen(5)
+
+
+    except socket.error as mag:
+        print("socket binding error ",str(mag)," retrying")
+        bind_socket()
+
+
+def accept():
+    conn,adress=s.accept()
+    conn.setblocking(1)
+    print("ip : ",adress[0]," port : ",adress[1])
+    send_command(conn)
+    conn.close()
+
+
+
+
 def cal_score(window):
     score=0
     if(window.count(2)==4):
@@ -175,6 +179,8 @@ def score_position(board):
 
 
     return score
+
+
 def put_turn2(board2,row,col,plr):
     board2[row,col]=plr
 
@@ -242,68 +248,28 @@ def minimax(board,depth,alpha,beta,maximizingPlayer):
 
 
 
-
-
-
-
-def start_game(conn,plr,x):
-    while(game=="True" or game=="true"):
-        if(plr==1):
-            if(x==-1):
-                x = str(x)
-                conn.send(str.encode(x))
-            col = str(conn.recv(1024), "utf-8")
-            col=int(col)
-            if (validity(col)):
-                row = get_next_open_window(col)
-                put_turn(board, row, col,plr)
-                win = win_cond(plr)
-                plr = (plr % 2) + 1
-                print(np.flip(board, 0))
-            else:
-                continue
-            if (win == 1):
-                pygame.draw.rect(screen, black, (0, 0, width, size))
-                label = myfont.render("Player 1 wins", 1, red)
-                screen.blit(label, (40, 10))
-                pygame.display.update()
-                print("player ", ((turn % 2) + 1), "WINS")
-                print(np.flip(board, 0))
-                time.sleep(2)
-                #sys.exit()
-                pygame.quit()
-        if(plr==2):
-            col,minimax_score=minimax(board,5,-math.inf,math.inf,True)
-            #print(col)
-            #print(minimax_score)
-            if(validity(col)):
-                x=col
-                x = str(x)
-                print("hi")
-                conn.send(str.encode(x))
-                row=get_next_open_window(col)
-                put_turn(board,row,col,plr)
-                win=win_cond(plr)
-                plr=(plr%2)+1
-                print(np.flip(board, 0))
-                if (win == 1):
-                    pygame.draw.rect(screen, black, (0, 0, width, size))
-                    label = myfont.render("Player 2 wins", 2, yellow)
-                    screen.blit(label, (40, 10))
-                    pygame.display.update()
-                    print("player ", ((turn % 2) + 1), "WINS")
-                    print(np.flip(board, 0))
-                    time.sleep(2)
-                    pygame.quit()
-
-
-def accept():
-    conn,adress=s.accept()
-    conn.setblocking(1)
-    print("ip : ",adress[0]," port : ",adress[1])
-    send_command(conn)
-    conn.close()
-
+def ai_turn(plr):
+    print("ai")
+    col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
+    # print(minimax_score)
+    if (validity(col)):
+        print("hi")
+        row = get_next_open_window(col)
+        put_turn(board, row, col,2)
+        win = win_cond(plr)
+        plr = (plr % 2) + 1
+        print(np.flip(board, 0))
+        if (win == 1):
+            pygame.draw.rect(screen, black, (0, 0, width, size))
+            label = myfont.render("Player 2 wins", 2, yellow)
+            screen.blit(label, (40, 10))
+            pygame.display.update()
+            print("player 2 WINS")
+            print(np.flip(board, 0))
+            time.sleep(2)
+            # sys.exit()
+            pygame.quit()
+    return win,col
 
 def send_command(conn):
     while True:
@@ -312,15 +278,25 @@ def send_command(conn):
             conn.close()
             s.close()
             sys.exit()
-
         if(cmd=="start"):
-            plr = random.randint(1, 2)
-            x = -1
-            start_game(conn,plr,x)
-        '''if(len(str.encode(cmd))>0):
-            conn.send(str.encode(cmd))
-            client_response=str(conn.recv(1024),"utf-8")
-            print(client_response,end="")'''
+            plr=random.randint(1,2)
+            ai=-1
+            win=0
+            game=True
+            while game:
+                data = [win, ai]
+                conn.send(pickle.dumps(data))
+                data=pickle.loads(conn.recv(2048))
+                human=data[1]
+                win=data[0]
+                row = get_next_open_window(human)
+                put_turn(board, row, human,1)
+                if win == 0:
+                    win,ai=ai_turn(2)
+
+
+
+
 
 
 
@@ -331,24 +307,4 @@ def main():
     accept()
 
 main()
-
-
-
-
-
-
-
-
-
-#checking for the validity of the move
-
-
-
-# the game
-
-
-
-
-
-
 
