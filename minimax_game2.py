@@ -7,9 +7,6 @@ import math
 
 pygame.init()
 
-
-
-
 #global variables
 row_size=6
 column_size=7
@@ -28,7 +25,6 @@ black=(0,0,0)
 red=(255,0,0)
 yellow=(255,255,0)
 
-
 #creating the screen of the game
 screen_size=(width,height)
 screen=pygame.display.set_mode(screen_size)
@@ -39,16 +35,16 @@ for i in range(row_size):
 pygame.display.set_caption("ai ")
 pygame.display.update()
 
-
-
 #checking for the validity of the move
 def validity(col):
     return board[row_size-1][col]==0
+
 
 def get_next_open_window(col):
     for r in range(row_size):
         if board[r][col] == 0:
             return r
+        
 
 #putting the repective player's pieces in their positions
 def put_turn(board,row,col):
@@ -91,6 +87,7 @@ def win_cond(plr):
                 return 1
 
     return 0
+
 
 def cal_score(window):
     score=0
@@ -155,10 +152,9 @@ def get_valid_locations():
     return valid_locations
 
 
-
-
 def is_terminal_node():
     return win_cond(1) or win_cond(2) or len(get_valid_locations())==0
+
 
 def minimax(board,depth,alpha,beta,maximizingPlayer):
 
@@ -207,11 +203,7 @@ def minimax(board,depth,alpha,beta,maximizingPlayer):
         return column,value
 
 
-
-
-
-
-# the game
+# THE GAME
 plr=random.randint(1,2)
 myfont = pygame.font.SysFont("monospace", 75)
 
